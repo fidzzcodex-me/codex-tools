@@ -151,7 +151,7 @@
     },
     {
       "name": "Enable Auto Backup",
-      "description": "Automatically backup files to .codex/backups folder.\nKeeps last 5 backups.",
+      "description": "Automatically backup files to .codex/backups folder.\nKeeps last 5 backups. Isi Telegram Bot Token + Chat ID kalau mau backup juga terkirim ke Telegram.",
       "env_variable": "ENABLE_AUTO_BACKUP",
       "default_value": "false",
       "user_viewable": true,
@@ -167,6 +167,36 @@
       "user_viewable": true,
       "user_editable": true,
       "rules": "nullable|integer|min:1|max:168",
+      "field_type": "text"
+    },
+    {
+      "name": "Backup to Telegram",
+      "description": "true = backup juga dikirim ke Telegram (selain ke folder .codex/backups). Butuh Bot Token & Chat ID di bawah diisi.",
+      "env_variable": "ENABLE_TELEGRAM_BACKUP",
+      "default_value": "false",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|in:true,false",
+      "field_type": "text"
+    },
+    {
+      "name": "Telegram Bot Token",
+      "description": "Isi kalau Backup to Telegram = true. Dapetin dari @BotFather di Telegram.",
+      "env_variable": "TELEGRAM_BOT_TOKEN",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "nullable|string|max:100",
+      "field_type": "text"
+    },
+    {
+      "name": "Telegram Chat/User ID",
+      "description": "Isi kalau Backup to Telegram = true. Chat ID atau User ID tujuan kirim file backup. Cek lewat @userinfobot di Telegram.",
+      "env_variable": "TELEGRAM_CHAT_ID",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "nullable|string|max:50",
       "field_type": "text"
     },
     {
@@ -211,32 +241,32 @@
     },
     {
       "name": "Node.js Version",
-      "description": "Node.js version to use if STARTUP_CMD is a Node command.\nPre-installed: 18, 20, 22. Default: 22.",
+      "description": "Pilih versi Node.js yang mau dipakai.",
       "env_variable": "NODE_VERSION",
       "default_value": "22",
       "user_viewable": true,
       "user_editable": true,
-      "rules": "nullable|string|max:5",
+      "rules": "required|string|in:18,20,22",
       "field_type": "text"
     },
     {
       "name": "Python Version",
-      "description": "Python version to use if STARTUP_CMD is a Python command.\nPre-installed: 3.11, 3.12, 3.13. Default: 3.13.",
+      "description": "Pilih versi Python yang mau dipakai.",
       "env_variable": "PYTHON_VERSION",
       "default_value": "3.13",
       "user_viewable": true,
       "user_editable": true,
-      "rules": "nullable|string|max:10",
+      "rules": "required|string|in:3.11,3.12,3.13",
       "field_type": "text"
     },
     {
       "name": "PHP Version",
-      "description": "PHP version to use if STARTUP_CMD is a PHP command.\nPre-installed: 8.1, 8.2, 8.3, 8.4. Default: 8.3.",
+      "description": "Pilih versi PHP yang mau dipakai.",
       "env_variable": "PHP_VERSION",
       "default_value": "8.3",
       "user_viewable": true,
       "user_editable": true,
-      "rules": "nullable|string|max:5",
+      "rules": "required|string|in:8.1,8.2,8.3,8.4",
       "field_type": "text"
     },
     {
