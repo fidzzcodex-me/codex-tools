@@ -117,3 +117,22 @@ get_container_cpu_cores() {
 
   awk -v q="$quota" -v p="$period" 'BEGIN{printf "%.1f", q/p}'
 }
+
+get_browser_path() {
+  local engine="$1"
+  local dir exe
+
+  dir=$(find /opt/browsers -maxdepth 1 -type d -iname "${engine}-*" 2>/dev/null | head -n1)
+  if [ -z "$dir" ]; then
+    echo "not found"
+    return
+  fi
+
+  exe=$(find "$dir" -maxdepth 3 -type f -executable \( -iname "firefox" -o -iname "MiniBrowser" -o -iname "chrome" -o -iname "pw_run.sh" \) 2>/dev/null | head -n1)
+
+  if [ -n "$exe" ]; then
+    echo "$exe"
+  else
+    echo "$dir"
+  fi
+}
