@@ -36,8 +36,13 @@ print_banner() {
   echo -e "  ${C_SKY}Headless Mode${C_RESET} : ${C_TEXT}${HEADLESS_MODE:-true}${C_RESET}"
   echo -e "  ${C_SKY}Process Manager${C_RESET}: ${C_TEXT}$([ "$PROCESS_MANAGER" = "true" ] && echo "PM2" || echo "off")${C_RESET}"
   echo ""
+  echo -e "  ${C_SKY}Chromium Path${C_RESET} : ${C_TEXT}${PUPPETEER_EXECUTABLE_PATH:-not found}${C_RESET}"
+  echo -e "  ${C_SKY}Firefox Path${C_RESET}  : ${C_TEXT}$(get_browser_path firefox)${C_RESET}"
+  echo -e "  ${C_SKY}WebKit Path${C_RESET}   : ${C_TEXT}$(get_browser_path webkit)${C_RESET}"
+  echo ""
   echo -e "  ${C_SKY}Web Terminal${C_RESET}  : $([ "$ENABLE_WEB_TERMINAL" = "true" ] && echo "${C_GREEN}http://${SERVER_IP:-?}:${WEB_TERMINAL_PORT:-7681} (protected)${C_RESET}" || echo "${C_OVERLAY}disabled${C_RESET}")"
   echo -e "  ${C_SKY}Tunnel${C_RESET}        : $([ "$ENABLE_CF_TUNNEL" = "true" ] && echo "${C_GREEN}Cloudflare${C_RESET}" || echo "${C_OVERLAY}disabled${C_RESET}")"
   echo -e "  ${C_SKY}Auto Backup${C_RESET}   : $([ "$ENABLE_AUTO_BACKUP" = "true" ] && echo "${C_GREEN}every ${BACKUP_INTERVAL_HOURS:-24}h${C_RESET}" || echo "${C_OVERLAY}disabled${C_RESET}")"
+  echo -e "  ${C_SKY}  -> Telegram${C_RESET} : $([ "$ENABLE_TELEGRAM_BACKUP" = "true" ] && echo "${C_GREEN}aktif${C_RESET}" || echo "${C_OVERLAY}off${C_RESET}")"
   echo ""
 }
