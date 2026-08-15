@@ -19,6 +19,10 @@ run_config_check() {
     warnings+=("SERVER_IP tidak tersedia dari Wings, alamat server di banner mungkin tidak akurat")
   fi
 
+  if [ "$ENABLE_TELEGRAM_BACKUP" = "true" ] && { [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; }; then
+    warnings+=("Backup to Telegram aktif tapi Bot Token/Chat ID belum lengkap diisi")
+  fi
+
   if [ "${#warnings[@]}" -eq 0 ]; then
     return 0
   fi
