@@ -23,6 +23,10 @@ run_config_check() {
     warnings+=("Backup to Telegram aktif tapi Bot Token/Chat ID belum lengkap diisi")
   fi
 
+  if [ "$STATIC_HOST_MODE" = "true" ] && [ -n "$STARTUP_CMD" ]; then
+    warnings+=("Static Host Mode aktif, STARTUP_CMD diabaikan (server statis yang jalan, bukan app kamu)")
+  fi
+
   if [ "${#warnings[@]}" -eq 0 ]; then
     return 0
   fi
