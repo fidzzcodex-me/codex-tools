@@ -10,10 +10,15 @@ RUN apt-get update -y && apt-get install -y \
     software-properties-common \
     jq nano vim htop \
     sqlite3 \
-    ffmpeg \
+    ffmpeg imagemagick \
     openssh-client \
     cron \
     supervisor \
+    python3-dev \
+    libvips-dev \
+    libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev \
+    postgresql-client default-mysql-client redis-tools \
+    git-lfs \
     && rm -rf /var/lib/apt/lists/*
 
 ENV NVM_DIR=/usr/local/nvm
@@ -62,7 +67,7 @@ RUN apt-get update -y && apt-get install -y \
     libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 \
     libpango-1.0-0 libcairo2 fonts-liberation \
     libx11-6 libxext6 libxcb1 libxrender1 libxi6 \
-    libgtk-3-0 libvulkan1 \
+    libgtk-3-0 libvulkan1 libdbus-glib-1-2 libx11-xcb1 \
     xvfb x11-utils xauth \
     libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 \
     libwoff1 libopus0 libwebpdemux2 libharfbuzz-icu0 \
@@ -81,6 +86,12 @@ ENV LANG=en_US.UTF-8 \
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/browsers
 RUN pip install --break-system-packages playwright && \
     python3 -m playwright install chromium firefox webkit --with-deps
+
+ENV XDG_CACHE_HOME=/opt/camoufox-cache
+RUN pip install --break-system-packages "camoufox[geoip]" && \
+    python3 -m camoufox fetch && \
+    echo "=== camoufox cache contents ===" && \
+    find /opt/camoufox-cache -maxdepth 3
 
 RUN . $NVM_DIR/nvm.sh && \
     npm install -g playwright puppeteer puppeteer-real-browser puppeteer-extra puppeteer-extra-plugin-stealth pm2 && \
