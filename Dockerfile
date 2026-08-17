@@ -89,7 +89,9 @@ RUN pip install --break-system-packages playwright && \
 
 ENV XDG_CACHE_HOME=/opt/camoufox-cache
 RUN pip install --break-system-packages "camoufox[geoip]" && \
-    python3 -m camoufox fetch && \
+    for i in 1 2 3 4 5; do \
+      python3 -m camoufox fetch && break || { echo "camoufox fetch failed, retry $i/5..."; sleep 10; }; \
+    done && \
     echo "=== camoufox cache contents ===" && \
     find /opt/camoufox-cache -maxdepth 3
 
