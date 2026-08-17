@@ -1,7 +1,7 @@
 #!/bin/bash
 
 print_banner() {
-  local node_ver python_ver php_ver os_name kernel cpu_cores ram_str disk_used disk_total uptime_str addr
+  local node_ver python_ver php_ver os_name kernel cpu_cores ram_str disk_used disk_total uptime_str addr pm_mode
 
   node_ver=$(node -v 2>/dev/null || echo "not active")
   python_ver=$(python3 --version 2>/dev/null | awk '{print $2}' || echo "not active")
@@ -17,35 +17,60 @@ print_banner() {
   uptime_str=$(get_container_uptime)
   addr=$(get_server_address)
 
+  if [ "$PROCESS_MANAGER" != "true" ]; then
+    pm_mode="off"
+  elif [[ "$STARTUP_CMD" == node\ * ]]; then
+    pm_mode="PM2 (Node)"
+  else
+    pm_mode="Supervisor"
+  fi
+
+  ui_section "root's Console"
+
+  ui_row "OS" "$os_name"
+  ui_row "Kernel" "${kernel} (host-shared)"
+  ui_row "CPU Cores" "$cpu_cores"
+  ui_row "RAM" "$ram_str"
+  ui_row "Disk" "${disk_used} / ${disk_total}"
+  ui_row "Uptime" "$uptime_str"
+  ui_row "Address" "$addr"
   echo ""
-  echo -e "${C_MAUVE}  ╭──────────────────────────────────────────────╮${C_RESET}"
-  echo -e "${C_MAUVE}  │${C_RESET}  ${C_BOLD}${C_TEXT}root's Console${C_RESET}"
-  echo -e "${C_MAUVE}  ╰──────────────────────────────────────────────╯${C_RESET}"
+  ui_row "Node.js" "$node_ver"
+  ui_row "Python" "$python_ver"
+  ui_row "PHP" "$php_ver"
+  ui_row "Headless" "${HEADLESS_MODE:-true}"
+  ui_row "Proc. Manager" "$pm_mode"
   echo ""
-  echo -e "  ${C_SKY}OS${C_RESET}            : ${C_TEXT}${os_name}${C_RESET}"
-  echo -e "  ${C_SKY}Kernel${C_RESET}        : ${C_TEXT}${kernel}${C_RESET} ${C_OVERLAY}(host-shared)${C_RESET}"
-  echo -e "  ${C_SKY}CPU Cores${C_RESET}     : ${C_TEXT}${cpu_cores}${C_RESET}"
-  echo -e "  ${C_SKY}RAM${C_RESET}           : ${C_TEXT}${ram_str}${C_RESET}"
-  echo -e "  ${C_SKY}Disk${C_RESET}          : ${C_TEXT}${disk_used} / ${disk_total}${C_RESET}"
-  echo -e "  ${C_SKY}Uptime${C_RESET}        : ${C_TEXT}${uptime_str}${C_RESET}"
-  echo -e "  ${C_SKY}Server Address${C_RESET}: ${C_TEXT}${addr}${C_RESET}"
+  ui_row "Chromium" "${PUPPETEER_EXECUTABLE_PATH:-not found}"
+  ui_row "Firefox" "$(get_browser_path firefox)"
+  ui_row "WebKit" "$(get_browser_path webkit)"
+  ui_row "Camoufox" "$([ -d /opt/camoufox-cache ] && echo "ready" || echo "not baked")"
+  ui_row "Modules" "ffmpeg, imagemagick, sharp/canvas, git-lfs, pg/mysql/redis"
   echo ""
-  echo -e "  ${C_SKY}Node.js${C_RESET}       : ${C_TEXT}${node_ver}${C_RESET}"
-  echo -e "  ${C_SKY}Python${C_RESET}        : ${C_TEXT}${python_ver}${C_RESET}"
-  echo -e "  ${C_SKY}PHP${C_RESET}           : ${C_TEXT}${php_ver}${C_RESET}"
-  echo -e "  ${C_SKY}Headless Mode${C_RESET} : ${C_TEXT}${HEADLESS_MODE:-true}${C_RESET}"
-  echo -e "  ${C_SKY}Process Manager${C_RESET}: ${C_TEXT}$([ "$PROCESS_MANAGER" != "true" ] && echo "off" || { [[ "$STARTUP_CMD" == node\ * ]] && echo "PM2 (Node)" || echo "Supervisor"; })${C_RESET}"
-  echo ""
-  echo -e "  ${C_SKY}Chromium Path${C_RESET} : ${C_TEXT}${PUPPETEER_EXECUTABLE_PATH:-not found}${C_RESET}"
-  echo -e "  ${C_SKY}Firefox Path${C_RESET}  : ${C_TEXT}$(get_browser_path firefox)${C_RESET}"
-  echo -e "  ${C_SKY}WebKit Path${C_RESET}   : ${C_TEXT}$(get_browser_path webkit)${C_RESET}"
-  echo -e "  ${C_SKY}Camoufox${C_RESET}      : ${C_TEXT}$([ -d /opt/camoufox-cache ] && echo "ready (XDG_CACHE_HOME=/opt/camoufox-cache)" || echo "not baked")${C_RESET}"
-  echo -e "  ${C_SKY}Modules${C_RESET}       : ${C_TEXT}ffmpeg, imagemagick, sharp/canvas deps, git-lfs, pg/mysql/redis client${C_RESET}"
-  echo ""
-  echo -e "  ${C_SKY}Web Terminal${C_RESET}  : $([ "$ENABLE_WEB_TERMINAL" = "true" ] && echo "${C_GREEN}http://${SERVER_IP:-?}:${WEB_TERMINAL_PORT:-7681} (protected)${C_RESET}" || echo "${C_OVERLAY}disabled${C_RESET}")"
-  echo -e "  ${C_SKY}Tunnel${C_RESET}        : $([ "$ENABLE_CF_TUNNEL" = "true" ] && echo "${C_GREEN}Cloudflare${C_RESET}" || echo "${C_OVERLAY}disabled${C_RESET}")"
-  echo -e "  ${C_SKY}Auto Backup${C_RESET}   : $([ "$ENABLE_AUTO_BACKUP" = "true" ] && echo "${C_GREEN}every ${BACKUP_INTERVAL_HOURS:-24}h${C_RESET}" || echo "${C_OVERLAY}disabled${C_RESET}")"
-  echo -e "  ${C_SKY}  -> Telegram${C_RESET} : $([ "$ENABLE_TELEGRAM_BACKUP" = "true" ] && echo "${C_GREEN}aktif${C_RESET}" || echo "${C_OVERLAY}off${C_RESET}")"
+
+  if [ "$ENABLE_WEB_TERMINAL" = "true" ]; then
+    ui_ok "Web Terminal  -> http://${SERVER_IP:-?}:${WEB_TERMINAL_PORT:-7681} (protected)"
+  else
+    ui_info "Web Terminal  -> disabled"
+  fi
+
+  if [ "$ENABLE_CF_TUNNEL" = "true" ]; then
+    ui_ok "Tunnel        -> Cloudflare"
+  else
+    ui_info "Tunnel        -> disabled"
+  fi
+
+  if [ "$ENABLE_AUTO_BACKUP" = "true" ]; then
+    ui_ok "Auto Backup   -> every ${BACKUP_INTERVAL_HOURS:-24}h"
+  else
+    ui_info "Auto Backup   -> disabled"
+  fi
+
+  if [ "$ENABLE_TELEGRAM_BACKUP" = "true" ]; then
+    ui_ok "  -> Telegram sync aktif"
+  else
+    ui_info "  -> Telegram sync off"
+  fi
   echo ""
 }
 
@@ -54,19 +79,15 @@ print_access_info() {
   local addr
   addr=$(get_server_address)
 
-  echo ""
-  echo -e "${C_GREEN}  ╭──────────────────────────────────────────────╮${C_RESET}"
-  echo -e "${C_GREEN}  │${C_RESET}  ${C_BOLD}Buka aplikasi kamu di:${C_RESET}"
-  echo -e "${C_GREEN}  │${C_RESET}  ${C_TEAL}http://${SERVER_IP:-$addr}:${port}${C_RESET}"
+  ui_section "Access Info"
+  ui_ok "App          -> http://${SERVER_IP:-$addr}:${port}"
 
   if [ "$ENABLE_CF_TUNNEL" = "true" ]; then
     local tunnel_id
     tunnel_id=$(grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' /tmp/cloudflared.log 2>/dev/null | head -n1)
     if [ -n "$tunnel_id" ]; then
-      echo -e "${C_GREEN}  │${C_RESET}  ${C_OVERLAY}Tunnel target: ${tunnel_id}.cfargotunnel.com${C_RESET}"
+      ui_info "Tunnel target -> ${tunnel_id}.cfargotunnel.com"
     fi
   fi
-
-  echo -e "${C_GREEN}  ╰──────────────────────────────────────────────╯${C_RESET}"
   echo ""
 }
