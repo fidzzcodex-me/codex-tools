@@ -65,13 +65,28 @@ fi
 
 print_access_info
 
-EXEC_CMD="$FINAL_CMD"
+ui_section "Startup Sequence"
+
+XVFB_PREFIX=""
 if [ "$HEADLESS_MODE" = "false" ]; then
-  EXEC_CMD="xvfb-run -a --server-args='-screen 0 1280x1024x24' $FINAL_CMD"
+  if ! command -v xvfb-run >/dev/null 2>&1; then
+    ui_err "HEADLESS_MODE=false tapi binary xvfb-run tidak ditemukan"
+    ui_info "PATH: ${PATH}"
+    ui_info "Image belum ter-rebuild dengan paket xvfb - reinstall/rebuild server"
+  else
+    XVFB_PREFIX="xvfb-run -a --server-args=-screen\ 0\ 1280x1024x24\ -ac "
+    ui_ok "HEADLESS_MODE=false -> Xvfb virtual display aktif"
+  fi
+else
+  ui_info "HEADLESS_MODE=true -> jalan tanpa Xvfb"
 fi
 
+EXEC_CMD="${XVFB_PREFIX}${FINAL_CMD}"
+ui_row "Exec" "$EXEC_CMD"
+echo ""
+
 if [ "$USE_SUPERVISOR" = "true" ]; then
-  echo -e "${C_GREEN}[supervisor] crash-recovery aktif buat: ${FINAL_CMD}${C_RESET}"
+  ui_ok "Supervisor crash-recovery aktif untuk: ${FINAL_CMD}"
   cat > /tmp/supervisord.conf << SUPERVISOR_EOF
 [supervisord]
 nodaemon=true
@@ -79,7 +94,7 @@ logfile=/tmp/supervisord.log
 pidfile=/tmp/supervisord.pid
 
 [program:app]
-command=/bin/bash -c "${EXEC_CMD}"
+command=/bin/bash -lc '${EXEC_CMD}'
 directory=/home/container
 autostart=true
 autorestart=true
