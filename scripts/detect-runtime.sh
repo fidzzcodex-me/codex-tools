@@ -16,6 +16,10 @@ setup_runtime_paths() {
   if [ -n "$PHP_VERSION" ] && command -v "php$PHP_VERSION" >/dev/null 2>&1; then
     update-alternatives --set php "/usr/bin/php$PHP_VERSION" >/dev/null 2>&1
   fi
+
+  # nvm use prepends its own node bin dir to PATH; re-assert these so they
+  # stay reachable no matter which NODE_VERSION got selected above.
+  export PATH="/usr/local/go/bin:${CARGO_HOME:-/usr/local/cargo}/bin:${BUN_INSTALL:-/usr/local/bun}/bin:${PATH}"
 }
 
 detect_and_setup_runtime() {
@@ -23,7 +27,14 @@ detect_and_setup_runtime() {
   DETECTED_RUNTIME="Unknown"
 
   case "$cmd" in
-    *node\ * | node* | *npm\ * | npm* | *npx\ * | *bun\ * | bun*)
+    *bun\ * | bun*)
+      DETECTED_RUNTIME="Bun"
+      if [ -f "package.json" ]; then
+        bun install
+      fi
+      ;;
+
+    *node\ * | node* | *npm\ * | npm* | *npx\ * | *pnpm\ * | pnpm* | *yarn\ * | yarn*)
       DETECTED_RUNTIME="Node.js"
       if [ -f "package.json" ]; then
         case "$INSTALL_DEPS" in
@@ -47,6 +58,27 @@ detect_and_setup_runtime() {
       if [ -f "composer.json" ]; then
         composer install --no-interaction
       fi
+      ;;
+
+    *go\ run\ * | *go\ build\ * | go\ * | ./app_bin* | ./main*)
+      DETECTED_RUNTIME="Go"
+      if [ -f "go.mod" ]; then
+        go mod download
+        if [ "$AUTO_BUILD" = "true" ] && [[ "$cmd" == ./* ]]; then
+          go build -o app_bin .
+        fi
+      fi
+      ;;
+
+    *cargo\ run* | *cargo\ * | ./target/*)
+      DETECTED_RUNTIME="Rust"
+      if [ -f "Cargo.toml" ] && [ "$AUTO_BUILD" = "true" ] && [[ "$cmd" == ./target/* ]]; then
+        cargo build --release
+      fi
+      ;;
+
+    *g++\ * | *gcc\ *)
+      DETECTED_RUNTIME="C/C++"
       ;;
   esac
 
