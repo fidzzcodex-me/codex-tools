@@ -3,10 +3,16 @@
 print_logo() {
   echo -e "${C_MAUVE}"
   cat << 'LOGO'
-  ┌─────────────────────────┐
-  │       C O D E X         │
-  │      custom  tools      │
-  └─────────────────────────┘
+  ╭──────────────────────────────────────────────────╮
+  │                                                    │
+  │     ▄████▄   ▒█████  ▓█████▄ ▓█████ ▒██   ██▒     │
+  │    ▒██▀ ▀█  ▒██▒  ██▒▒██▀ ██▌▓█   ▀ ▒▒ █ █ ▒░     │
+  │    ▒▓█    ▄ ▒██░  ██▒░██   █▌▒███   ░░  █   ░     │
+  │    ▒▓▓▄ ▄██▒▒██   ██░░▓█▄   ▌▒▓█  ▄  ░ █ █ ▒      │
+  │    ▒ ▓███▀ ░░ ████▓▒░░▒████▓ ░▒████▒▒██▒ ▒██▒     │
+  │                custom tools runtime               │
+  │                                                    │
+  ╰──────────────────────────────────────────────────╯
 LOGO
   echo -e "${C_RESET}"
 }
@@ -25,7 +31,7 @@ run_boot_animation() {
   echo ""
   boot_step "Registering console identity"
   boot_step "Mounting workspace"
-  boot_step "Detecting runtime environment"
+  boot_step "Detecting runtime (Node/Bun/Python/PHP/Go/Rust/C/C++)"
   boot_step "Starting background services"
   boot_step "Finalizing system"
   echo ""
