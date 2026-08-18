@@ -31,9 +31,8 @@ run_config_check() {
     return 0
   fi
 
-  echo ""
-  echo -e "${C_YELLOW}  ⚠ Config warnings:${C_RESET}"
+  ui_section "Config Warnings"
   for w in "${warnings[@]}"; do
-    echo -e "${C_YELLOW}    - ${w}${C_RESET}"
+    ui_warn "$w"
   done
 }
