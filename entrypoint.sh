@@ -39,6 +39,7 @@ start_cron_runner
 
 run_config_check
 print_banner
+print_runtime_status
 start_live_stats_ticker
 start_log_rotation
 
@@ -51,7 +52,7 @@ if [ "$STATIC_HOST_MODE" = "true" ]; then
   STATIC_DIR="${STATIC_HOST_DIR:-public}"
   mkdir -p "/home/container/${STATIC_DIR}"
   FINAL_CMD="python3 -m http.server ${APP_PORT:-3000} --directory ${STATIC_DIR} --bind 0.0.0.0"
-  echo -e "${C_GREEN}[static-host] serving ./${STATIC_DIR} on port ${APP_PORT:-3000}${C_RESET}"
+  ui_ok "[static-host] serving ./${STATIC_DIR} on port ${APP_PORT:-3000}"
 elif [ "$PROCESS_MANAGER" = "true" ] && [[ "$STARTUP_CMD" == node\ * ]]; then
   FINAL_CMD="pm2-runtime ${STARTUP_CMD#node }"
 elif [ "$PROCESS_MANAGER" = "true" ] && [ -n "$STARTUP_CMD" ]; then
@@ -59,7 +60,7 @@ elif [ "$PROCESS_MANAGER" = "true" ] && [ -n "$STARTUP_CMD" ]; then
 fi
 
 if [ -z "$FINAL_CMD" ]; then
-  echo -e "${C_YELLOW}No STARTUP_CMD set. Dropping into shell.${C_RESET}"
+  ui_warn "No STARTUP_CMD set. Dropping into shell."
   exec /bin/bash
 fi
 
@@ -97,8 +98,6 @@ fi
 EXEC_CMD="${XVFB_PREFIX}${FINAL_CMD}"
 ui_row "Exec" "$EXEC_CMD"
 echo ""
-
-print_runtime_status
 
 if [ "$USE_SUPERVISOR" = "true" ]; then
   ui_ok "Supervisor crash-recovery aktif untuk: ${FINAL_CMD}"
