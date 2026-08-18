@@ -67,6 +67,19 @@ print_access_info
 
 ui_section "Startup Sequence"
 
+if [ "$PROCESS_MANAGER" != "true" ]; then
+  ui_row "Proc. Manager" "off"
+elif [[ "$STARTUP_CMD" == node\ * ]]; then
+  ui_row "Proc. Manager" "PM2 (Node)"
+else
+  ui_row "Proc. Manager" "Supervisor"
+fi
+ui_row "Chromium" "${PUPPETEER_EXECUTABLE_PATH:-not found}"
+ui_row "Firefox" "$(get_browser_path firefox)"
+ui_row "WebKit" "$(get_browser_path webkit)"
+ui_row "Camoufox" "$([ -d /opt/camoufox-cache ] && echo "ready" || echo "not baked")"
+echo ""
+
 XVFB_PREFIX=""
 if [ "$HEADLESS_MODE" = "false" ]; then
   if ! command -v xvfb-run >/dev/null 2>&1; then
@@ -84,6 +97,8 @@ fi
 EXEC_CMD="${XVFB_PREFIX}${FINAL_CMD}"
 ui_row "Exec" "$EXEC_CMD"
 echo ""
+
+print_runtime_status
 
 if [ "$USE_SUPERVISOR" = "true" ]; then
   ui_ok "Supervisor crash-recovery aktif untuk: ${FINAL_CMD}"
