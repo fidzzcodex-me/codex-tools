@@ -20,6 +20,12 @@ setup_runtime_paths() {
   # nvm use prepends its own node bin dir to PATH; re-assert these so they
   # stay reachable no matter which NODE_VERSION got selected above.
   export PATH="/usr/local/go/bin:${CARGO_HOME:-/usr/local/cargo}/bin:${BUN_INSTALL:-/usr/local/bun}/bin:${PATH}"
+
+  # Force Go's build cache to a writable location. Without this, Go falls
+  # back to $XDG_CACHE_HOME/go-build, which is /opt/camoufox-cache (baked
+  # read-only for Camoufox) and makes every go build/run fail.
+  export GOCACHE="/home/container/.cache/go-build"
+  mkdir -p "$GOCACHE" 2>/dev/null
 }
 
 detect_and_setup_runtime() {
