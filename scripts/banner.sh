@@ -17,7 +17,7 @@ print_banner() {
 }
 
 # Live-checks each toolchain right now (not cached) and prints a
-# check/cross line with version, e.g. "Node.js  ✓  v22.11.0"
+# [+]/[-] line with version, e.g. "[+] Node.js  v22.11.0"
 print_runtime_status() {
   local node_ver python_ver php_ver bun_ver go_ver gcc_ver gpp_ver
 
