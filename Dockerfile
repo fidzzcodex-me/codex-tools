@@ -75,6 +75,11 @@ RUN ARCH=$(dpkg --print-architecture) && \
     rm /tmp/go.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 ENV GOPATH="/home/container/go"
+# Go defaults to $XDG_CACHE_HOME/go-build for its build cache. XDG_CACHE_HOME
+# is set later to /opt/camoufox-cache (read-only at runtime, baked for
+# Camoufox only), so Go must get its own writable cache dir explicitly or
+# every go build/run fails with "read-only file system".
+ENV GOCACHE="/home/container/.cache/go-build"
 
 # Rust toolchain
 ENV RUSTUP_HOME=/usr/local/rustup
