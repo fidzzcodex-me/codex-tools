@@ -153,6 +153,15 @@ RUN echo '' >> /etc/bash.bashrc && \
 
 COPY entrypoint.sh /entrypoint.sh
 COPY scripts/ /scripts/
-RUN chmod +x /entrypoint.sh /scripts/*.sh
+
+# The repo's web-based uploader occasionally mangles these files (CRLF line
+# endings and/or a UTF-8 BOM), which makes bash fail the shebang silently
+# with exit code 1 and zero output. Normalize at build time so the image is
+# always safe regardless of how the source file got uploaded.
+RUN apt-get update -y && apt-get install -y --no-install-recommends dos2unix && \
+    dos2unix /entrypoint.sh /scripts/*.sh && \
+    sed -i '1s/^\xEF\xBB\xBF//' /entrypoint.sh /scripts/*.sh && \
+    chmod +x /entrypoint.sh /scripts/*.sh && \
+    apt-get purge -y dos2unix && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 CMD ["/bin/bash", "/entrypoint.sh"]
