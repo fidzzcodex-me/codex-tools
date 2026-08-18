@@ -10,7 +10,7 @@ send_backup_to_telegram() {
   size_mb=$(( $(stat -c%s "$file" 2>/dev/null || echo 0) / 1024 / 1024 ))
 
   if [ "$size_mb" -gt 49 ]; then
-    echo -e "${C_YELLOW:-}[backup] file ${size_mb}MB kelewat limit Telegram Bot API (50MB), skip upload ke Telegram${C_RESET:-}"
+    ui_warn "[backup] file ${size_mb}MB kelewat limit Telegram Bot API (50MB), skip upload ke Telegram"
     return 1
   fi
 
@@ -20,9 +20,9 @@ send_backup_to_telegram() {
     "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
 
   if grep -q '"ok":true' /tmp/telegram-backup.log 2>/dev/null; then
-    echo -e "${C_GREEN:-}[backup] terkirim ke Telegram: $(basename "$file")${C_RESET:-}"
+    ui_ok "[backup] terkirim ke Telegram: $(basename "$file")"
   else
-    echo -e "${C_RED:-}[backup] gagal kirim ke Telegram, cek TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID${C_RESET:-}"
+    ui_err "[backup] gagal kirim ke Telegram, cek TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID"
   fi
 }
 
