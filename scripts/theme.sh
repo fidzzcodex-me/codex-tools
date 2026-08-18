@@ -127,30 +127,30 @@ ui_lang() {
   fi
 }
 
-# Runtime availability line with green check / red cross: ui_check "Node.js" true
+# Runtime availability line with [+]/[–] prefix and ✓/✗: ui_check "Node.js" true
 ui_check() {
   local name="$1" ok="$2"
   local label_w=12
   local lbl
   lbl=$(_ui_pad "$(_ui_truncate "$name" "$label_w")" "$label_w")
   if [ "$ok" = "true" ]; then
-    printf "  ${C_TEXT}%s${C_RESET} ${C_GREEN}✓${C_RESET}\n" "$lbl"
+    printf "  ${C_GREEN}[+]${C_RESET} ${C_TEXT}%s${C_RESET} ${C_GREEN}✓${C_RESET}\n" "$lbl"
   else
-    printf "  ${C_TEXT}%s${C_RESET} ${C_RED}✗${C_RESET}\n" "$lbl"
+    printf "  ${C_RED}[–]${C_RESET} ${C_OVERLAY}%s${C_RESET} ${C_RED}✗${C_RESET}\n" "$lbl"
   fi
 }
 
-# Runtime availability with check/cross AND version text:
-# ui_check_ver "Node.js" true "v22.11.0"
+# Runtime availability with [+]/[–] prefix, ✓/✗ symbol, and version text:
+# ui_check_ver "Node.js" true "v22.11.0"  ->  [+] Node.js  ✓  v22.11.0
 ui_check_ver() {
   local name="$1" ok="$2" ver="$3"
-  local label_w=11 ver_w=16
+  local label_w=11 ver_w=18
   local lbl v
   lbl=$(_ui_pad "$(_ui_truncate "$name" "$label_w")" "$label_w")
   if [ "$ok" = "true" ]; then
     v=$(_ui_truncate "$ver" "$ver_w")
-    printf "  ${C_TEXT}%s${C_RESET} ${C_GREEN}✓${C_RESET}  ${C_SUBTEXT}%s${C_RESET}\n" "$lbl" "$v"
+    printf "  ${C_GREEN}[+]${C_RESET} ${C_TEXT}%s${C_RESET} ${C_GREEN}✓${C_RESET}  ${C_SUBTEXT}%s${C_RESET}\n" "$lbl" "$v"
   else
-    printf "  ${C_OVERLAY}%s${C_RESET} ${C_RED}✗${C_RESET}  ${C_OVERLAY}not installed${C_RESET}\n" "$lbl"
+    printf "  ${C_RED}[–]${C_RESET} ${C_OVERLAY}%s${C_RESET} ${C_RED}✗${C_RESET}  ${C_OVERLAY}not installed${C_RESET}\n" "$lbl"
   fi
 }
