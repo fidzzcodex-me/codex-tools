@@ -120,6 +120,16 @@
             "field_type": "text"
         },
         {
+            "name": "Skip Deps Install",
+            "description": "Lewati npm/pip/composer/go mod install setiap restart. Aktifkan kalau dependency sudah lengkap dan mau restart lebih cepat.",
+            "env_variable": "SKIP_DEPS_INSTALL",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|boolean",
+            "field_type": "text"
+        },
+        {
             "name": "Process Manager (PM2)",
             "description": "true = auto-restart aplikasi kamu kalau crash, tanpa restart seluruh container. Node.js pakai PM2, bahasa lain (PHP/Python/dll) pakai Supervisor. Otomatis milih sesuai Startup Command.",
             "env_variable": "PROCESS_MANAGER",
