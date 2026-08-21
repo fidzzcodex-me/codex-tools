@@ -1,21 +1,40 @@
 #!/bin/bash
-cd /home/container || exit 1
 
-source /scripts/theme.sh
-source /scripts/identity.sh
-source /scripts/sysinfo.sh
-source /scripts/config-check.sh
-source /scripts/banner.sh
-source /scripts/boot-animation.sh
-source /scripts/live-stats.sh
-source /scripts/log-rotate.sh
-source /scripts/detect-runtime.sh
-source /scripts/webhook.sh
-source /scripts/backup.sh
-source /scripts/web-terminal.sh
-source /scripts/tunnel.sh
-source /scripts/git-setup.sh
-source /scripts/cron-runner.sh
+# Immediate proof-of-life line. If nothing below this ever prints, the
+# problem is upstream of this script (Docker/Wings), not the script itself.
+echo "[boot] entrypoint.sh started, pid $$"
+
+# /home/container is a mounted volume; on a freshly created/recreated
+# container it can occasionally not be attached yet the instant this
+# process starts. Retry briefly instead of exiting immediately with zero
+# further output.
+CD_TRIES=0
+until cd /home/container 2>/tmp/cd-error.log; do
+  CD_TRIES=$((CD_TRIES + 1))
+  if [ "$CD_TRIES" -ge 10 ]; then
+    echo "[boot] FATAL: /home/container tidak bisa diakses setelah ${CD_TRIES}x percobaan"
+    cat /tmp/cd-error.log 2>/dev/null
+    exit 1
+  fi
+  echo "[boot] /home/container belum siap, retry ${CD_TRIES}/10..."
+  sleep 1
+done
+echo "[boot] /home/container siap, lanjut init"
+
+SCRIPTS_TO_LOAD="theme identity sysinfo config-check banner boot-animation live-stats log-rotate detect-runtime webhook backup web-terminal tunnel git-setup cron-runner"
+
+for s in $SCRIPTS_TO_LOAD; do
+  if [ ! -f "/scripts/${s}.sh" ]; then
+    echo "[boot] FATAL: /scripts/${s}.sh tidak ditemukan di image"
+    exit 1
+  fi
+  # shellcheck source=/dev/null
+  if ! source "/scripts/${s}.sh"; then
+    echo "[boot] FATAL: gagal source /scripts/${s}.sh (kemungkinan file corrupt/CRLF)"
+    exit 1
+  fi
+done
+echo "[boot] semua script berhasil di-load"
 
 setup_identity
 run_boot_animation
