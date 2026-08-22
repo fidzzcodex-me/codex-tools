@@ -64,7 +64,7 @@ get_container_memory() {
     fi
   fi
 
-  echo "$(bytes_to_human "$used_bytes") / ${limit_str}"
+  echo "$(bytes_to_human "$used_bytes")/${limit_str}"
 }
 
 get_memory_percent() {
