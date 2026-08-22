@@ -4,6 +4,10 @@
 # problem is upstream of this script (Docker/Wings), not the script itself.
 echo "[boot] entrypoint.sh started, pid $$"
 
+set -o errtrace
+trap 'echo "[boot] FATAL: baris ${LINENO} gagal -> \"${BASH_COMMAND}\" (exit ${?})"' ERR
+trap 'ec=$?; [ "$ec" -ne 0 ] && echo "[boot] entrypoint.sh keluar dengan kode ${ec}"; exit $ec' EXIT
+
 # /home/container is a mounted volume; on a freshly created/recreated
 # container it can occasionally not be attached yet the instant this
 # process starts. Retry briefly instead of exiting immediately with zero
@@ -62,7 +66,7 @@ print_runtime_status
 start_live_stats_ticker
 start_log_rotation
 
-export HEADLESS_MODE="${HEADLESS_MODE:-true}"
+export HEADLESS_MODE="${HEADLESS_MODE:-false}"
 
 FINAL_CMD="$STARTUP_CMD"
 USE_SUPERVISOR="false"
@@ -107,7 +111,7 @@ if [ "$HEADLESS_MODE" = "false" ]; then
     ui_info "PATH: ${PATH}"
     ui_info "Image belum ter-rebuild dengan paket xvfb - reinstall/rebuild server"
   else
-    XVFB_PREFIX="xvfb-run -a --server-args=-screen\ 0\ 1280x1024x24\ -ac "
+    XVFB_PREFIX="xvfb-run -a --server-args=-screen\ 0\ 1280x720x16\ -ac "
     ui_ok "HEADLESS_MODE=false -> Xvfb virtual display aktif"
   fi
 else
@@ -116,6 +120,7 @@ fi
 
 EXEC_CMD="${XVFB_PREFIX}${FINAL_CMD}"
 ui_row "Exec" "$EXEC_CMD"
+ui_ok "Boot selesai dalam ${SECONDS}s"
 echo ""
 
 if [ "$USE_SUPERVISOR" = "true" ]; then
