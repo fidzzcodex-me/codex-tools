@@ -40,6 +40,20 @@ for s in $SCRIPTS_TO_LOAD; do
 done
 echo "[boot] semua script berhasil di-load"
 
+# Panel egg rules accept 1/0 as valid values for several toggles, but every
+# check below only ever compared against the literal string "true". Setting
+# one of these to "1" therefore looked enabled in the panel while silently
+# doing nothing at runtime. Normalize once, up front.
+for _b in STATIC_HOST_MODE PROCESS_MANAGER HEADLESS_MODE AUTO_UPDATE USER_UPLOAD \
+          SKIP_DEPS_INSTALL ENABLE_AUTO_BACKUP ENABLE_TELEGRAM_BACKUP \
+          ENABLE_WEB_TERMINAL ENABLE_CF_TUNNEL; do
+  case "${!_b}" in
+    1|true|TRUE|True|yes|YES|on|ON) export "$_b=true" ;;
+    0|false|FALSE|False|no|NO|off|OFF) export "$_b=false" ;;
+  esac
+done
+unset _b
+
 setup_identity
 run_boot_animation
 
