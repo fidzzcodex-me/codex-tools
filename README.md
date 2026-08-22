@@ -1,5 +1,18 @@
 # Codex Tools
 
+<div align="center">
+
+[![Typing SVG](https://readme-typing-svg.demolab.com/?font=Fira+Code&size=22&pause=1000&color=A6E3A1&center=true&vCenter=true&width=620&lines=Universal+App+Hosting+for+Pterodactyl;Node.js+%C2%B7+Python+%C2%B7+PHP;Browser+Automation+Ready;Deploy+with+Git+%C2%B7+Backup+%C2%B7+Web+Terminal)](https://github.com/fidzzcodex-me/codex-tools)
+
+[![Build and Push Docker Image](https://github.com/fidzzcodex-me/codex-tools/actions/workflows/docker-build.yml/badge.svg)](https://github.com/fidzzcodex-me/codex-tools/actions/workflows/docker-build.yml)
+[![Docker Image](https://img.shields.io/badge/ghcr.io-codex--tools-89B4FA?logo=docker&logoColor=white)](https://github.com/fidzzcodex-me/codex-tools/pkgs/container/codex-tools)
+[![Node.js](https://img.shields.io/badge/Node.js-18%20%7C%2020%20%7C%2022-A6E3A1?logo=node.js&logoColor=white)](#bahasa-dan-runtime-yang-didukung)
+[![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-F9E2AF?logo=python&logoColor=white)](#bahasa-dan-runtime-yang-didukung)
+[![PHP](https://img.shields.io/badge/PHP-8.1%20%7C%208.2%20%7C%208.3%20%7C%208.4-CBA6F7?logo=php&logoColor=white)](#bahasa-dan-runtime-yang-didukung)
+[![Pterodactyl Egg](https://img.shields.io/badge/Pterodactyl-Egg-F38BA8?logo=docker&logoColor=white)](egg-codex-tools.json)
+
+</div>
+
 Docker image dan Pterodactyl egg untuk hosting aplikasi apa saja dalam satu image: Node.js, Python, atau PHP, lengkap dengan dukungan browser automation, deployment via Git, process management, backup otomatis, dan akses terminal langsung dari browser. Runtime terdeteksi otomatis dari Startup Command yang kamu isi, tidak perlu pilih image terpisah untuk tiap bahasa.
 
 ## Daftar Isi
