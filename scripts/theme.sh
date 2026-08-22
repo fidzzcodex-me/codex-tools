@@ -70,7 +70,7 @@ ui_row() {
 ui_row2() {
   local l1="$1" v1="$2" l2="$3" v2="$4"
   local half=$(((UI_WIDTH - 2) / 2))
-  local lbl_w=9
+  local lbl_w=7
   local val_w=$((half - lbl_w - 2))
   local lbl1 val1 lbl2 val2
   lbl1=$(_ui_pad "$(_ui_truncate "$l1" "$lbl_w")" "$lbl_w")
