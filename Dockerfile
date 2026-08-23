@@ -59,7 +59,10 @@ RUN update-alternatives --install /usr/bin/php php /usr/bin/php8.1 81 && \
     update-alternatives --install /usr/bin/php php /usr/bin/php8.4 84 && \
     update-alternatives --set php /usr/bin/php8.3
 
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.13 1
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 311 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 312 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.13 313 && \
+    update-alternatives --set python3 /usr/bin/python3.13
 
 RUN apt-get update -y && apt-get install -y \
     libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 \
@@ -101,12 +104,17 @@ RUN . $NVM_DIR/nvm.sh && \
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 RUN ARCH=$(dpkg --print-architecture) && \
-    curl --retry 3 --retry-delay 2 -Lo /usr/local/bin/ttyd "https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.${ARCH}" && \
+    case "$ARCH" in \
+      amd64) TTYD_ARCH=x86_64 ;; \
+      arm64) TTYD_ARCH=aarch64 ;; \
+      *) TTYD_ARCH="$ARCH" ;; \
+    esac && \
+    curl --retry 3 --retry-delay 2 -fLo /usr/local/bin/ttyd "https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.${TTYD_ARCH}" && \
     chmod +x /usr/local/bin/ttyd
 
 
 RUN ARCH=$(dpkg --print-architecture) && \
-    curl --retry 3 --retry-delay 2 -Lo /usr/local/bin/cloudflared "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${ARCH}" && \
+    curl --retry 3 --retry-delay 2 -fLo /usr/local/bin/cloudflared "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${ARCH}" && \
     chmod +x /usr/local/bin/cloudflared
 
 WORKDIR /home/container
