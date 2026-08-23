@@ -212,6 +212,10 @@ Setiap kegagalan pada tahap manapun dicatat dengan jelas di console (baris beraw
 
 **Ctrl+C di console utama mematikan server.** Sesuai desain, karena console utama menampilkan proses aplikasi secara langsung dan Ctrl+C dikonfigurasi sebagai sinyal stop. Gunakan Web Terminal untuk sesi interaktif yang aman dari hal ini.
 
+**Web Terminal gagal start dengan error `ttyd: line 1: Not: command not found`.** Bug lama di Dockerfile: URL download ttyd memakai penamaan arsitektur gaya dpkg (`amd64`/`arm64`), padahal rilis ttyd di GitHub memakai penamaan gaya `uname` (`x86_64`/`aarch64`). Akibatnya link-nya 404, dan karena `curl` sebelumnya tidak memakai flag `-f`, halaman error "Not Found" ikut tersimpan sebagai file binary. Sudah diperbaiki: arsitektur dipetakan ke nama yang benar, dan build sekarang gagal secara jelas kalau downloadnya bermasalah lagi di kemudian hari.
+
+**Ganti `PYTHON_VERSION` ke 3.11 atau 3.12 bikin server crash `update-alternatives ... exit 2`.** Bug lama juga: cuma Python 3.13 yang didaftarkan lewat `update-alternatives --install` di image, padahal panel mengizinkan pilih 3.11/3.12 juga. Sudah diperbaiki, ketiga versi sekarang terdaftar seperti halnya PHP.
+
 ## Struktur Proyek
 
 ```
