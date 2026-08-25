@@ -33,6 +33,12 @@ RUN . $NVM_DIR/nvm.sh && \
     ln -s "$NVM_DIR/versions/node/$(nvm version default)" /usr/local/node-current
 ENV PATH="/usr/local/node-current/bin:$PATH"
 
+# Bun installed standalone (not via npm) so it stays available regardless of
+# which NODE_VERSION the user selects at runtime via nvm use.
+ENV BUN_INSTALL=/usr/local/bun
+RUN curl --retry 3 --retry-delay 2 -fsSL https://bun.sh/install | bash
+ENV PATH="${BUN_INSTALL}/bin:${PATH}"
+
 RUN for i in 1 2 3 4 5; do add-apt-repository -y ppa:deadsnakes/ppa && break || sleep 5; done && \
     apt-get update -y && \
     apt-get install -y \
@@ -59,10 +65,35 @@ RUN update-alternatives --install /usr/bin/php php /usr/bin/php8.1 81 && \
     update-alternatives --install /usr/bin/php php /usr/bin/php8.4 84 && \
     update-alternatives --set php /usr/bin/php8.3
 
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 311 && \
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 312 && \
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.13 313 && \
-    update-alternatives --set python3 /usr/bin/python3.13
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.13 1
+
+# Go toolchain
+ENV GO_VERSION=1.23.4
+RUN ARCH=$(dpkg --print-architecture) && \
+    curl --retry 3 --retry-delay 2 -Lo /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-${ARCH}.tar.gz" && \
+    tar -C /usr/local -xzf /tmp/go.tar.gz && \
+    rm /tmp/go.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
+ENV GOPATH="/home/container/go"
+# Go defaults to $XDG_CACHE_HOME/go-build for its build cache. XDG_CACHE_HOME
+# is set later to /opt/camoufox-cache (read-only at runtime, baked for
+# Camoufox only), so Go must get its own writable cache dir explicitly or
+# every go build/run fails with "read-only file system".
+ENV GOCACHE="/home/container/.cache/go-build"
+
+# Rust toolchain
+ENV RUSTUP_HOME=/usr/local/rustup
+ENV CARGO_HOME=/usr/local/cargo
+RUN curl --retry 3 --retry-delay 2 --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
+    sh -s -- -y --default-toolchain stable --profile minimal && \
+    chmod -R a+w $RUSTUP_HOME $CARGO_HOME
+ENV PATH="${CARGO_HOME}/bin:${PATH}"
+
+# C / C++ toolchain (build-essential already provides gcc/g++/make; add cmake + extra libs)
+RUN apt-get update -y && apt-get install -y \
+    cmake ninja-build gdb valgrind clang clang-format \
+    libboost-all-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update -y && apt-get install -y \
     libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 \
@@ -104,17 +135,12 @@ RUN . $NVM_DIR/nvm.sh && \
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 RUN ARCH=$(dpkg --print-architecture) && \
-    case "$ARCH" in \
-      amd64) TTYD_ARCH=x86_64 ;; \
-      arm64) TTYD_ARCH=aarch64 ;; \
-      *) TTYD_ARCH="$ARCH" ;; \
-    esac && \
-    curl --retry 3 --retry-delay 2 -fLo /usr/local/bin/ttyd "https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.${TTYD_ARCH}" && \
+    curl --retry 3 --retry-delay 2 -Lo /usr/local/bin/ttyd "https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.${ARCH}" && \
     chmod +x /usr/local/bin/ttyd
 
 
 RUN ARCH=$(dpkg --print-architecture) && \
-    curl --retry 3 --retry-delay 2 -fLo /usr/local/bin/cloudflared "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${ARCH}" && \
+    curl --retry 3 --retry-delay 2 -Lo /usr/local/bin/cloudflared "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${ARCH}" && \
     chmod +x /usr/local/bin/cloudflared
 
 WORKDIR /home/container
