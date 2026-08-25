@@ -22,6 +22,15 @@ setup_runtime_paths() {
     update-alternatives --set php "/usr/bin/php$PHP_VERSION" >/dev/null 2>&1
   fi
 
+  # nvm use prepends its own node bin dir to PATH; re-assert these so they
+  # stay reachable no matter which NODE_VERSION got selected above.
+  export PATH="/usr/local/go/bin:${CARGO_HOME:-/usr/local/cargo}/bin:${BUN_INSTALL:-/usr/local/bun}/bin:${PATH}"
+
+  # Force Go's build cache to a writable location. Without this, Go falls
+  # back to $XDG_CACHE_HOME/go-build, which is /opt/camoufox-cache (baked
+  # read-only for Camoufox) and makes every go build/run fail.
+  export GOCACHE="/home/container/.cache/go-build"
+  mkdir -p "$GOCACHE" 2>/dev/null
 }
 
 detect_and_setup_runtime() {
@@ -33,12 +42,19 @@ detect_and_setup_runtime() {
   fi
 
   case "$cmd" in
+    *bun\ * | bun*)
+      DETECTED_RUNTIME="Bun"
+      if [ -f "package.json" ] && [ "$SKIP_DEPS_INSTALL" != "true" ]; then
+        bun install
+      fi
+      ;;
+
     *node\ * | node* | *npm\ * | npm* | *npx\ * | *pnpm\ * | pnpm* | *yarn\ * | yarn*)
       DETECTED_RUNTIME="Node.js"
       if [ -f "package.json" ] && [ "$SKIP_DEPS_INSTALL" != "true" ]; then
         LOCK_HASH_FILE=".codex-lock-hash"
         CURRENT_HASH=""
-        for lockfile in package-lock.json pnpm-lock.yaml yarn.lock; do
+        for lockfile in package-lock.json pnpm-lock.yaml yarn.lock bun.lockb; do
           [ -f "$lockfile" ] && CURRENT_HASH="${CURRENT_HASH}$(md5sum "$lockfile" 2>/dev/null)"
         done
         [ -z "$CURRENT_HASH" ] && CURRENT_HASH="$(md5sum package.json 2>/dev/null)"
@@ -52,6 +68,7 @@ detect_and_setup_runtime() {
           case "$INSTALL_DEPS" in
             pnpm) pnpm install ;;
             yarn) yarn install ;;
+            bun)  bun install ;;
             *)    [ -f "package-lock.json" ] && npm ci || npm install ;;
           esac
           echo "$CURRENT_HASH" > "$LOCK_HASH_FILE"
@@ -71,6 +88,27 @@ detect_and_setup_runtime() {
       if [ -f "composer.json" ] && [ "$SKIP_DEPS_INSTALL" != "true" ]; then
         composer install --no-interaction
       fi
+      ;;
+
+    *go\ run\ * | *go\ build\ * | go\ * | ./app_bin* | ./main*)
+      DETECTED_RUNTIME="Go"
+      if [ -f "go.mod" ] && [ "$SKIP_DEPS_INSTALL" != "true" ]; then
+        go mod download
+        if [ "$AUTO_BUILD" = "true" ] && [[ "$cmd" == ./* ]]; then
+          go build -o app_bin .
+        fi
+      fi
+      ;;
+
+    *cargo\ run* | *cargo\ * | ./target/*)
+      DETECTED_RUNTIME="Rust"
+      if [ -f "Cargo.toml" ] && [ "$AUTO_BUILD" = "true" ] && [ "$SKIP_DEPS_INSTALL" != "true" ] && [[ "$cmd" == ./target/* ]]; then
+        cargo build --release
+      fi
+      ;;
+
+    *g++\ * | *gcc\ *)
+      DETECTED_RUNTIME="C/C++"
       ;;
   esac
 
