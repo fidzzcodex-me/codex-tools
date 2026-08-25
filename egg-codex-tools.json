@@ -8,7 +8,7 @@
     "name": "Codex Tools",
     "author": "fidzzcodex@codex.io",
     "uuid": "a2119a89-a3f6-5db8-97d6-a3a3d27b969d",
-    "description": "Universal app hosting untuk Pterodactyl: Node.js/PHP/Python (pilih versi, bukan cuma satu), browser automation lengkap (Puppeteer, Playwright, puppeteer-real-browser, Camoufox), static site hosting tanpa nulis server, cron job scheduler bawaan, backup otomatis ke folder + Telegram, web terminal, dan Cloudflare Tunnel. Auto-detect runtime dari startup command kamu.",
+    "description": "Universal app hosting untuk Pterodactyl: Node.js/Bun/PHP/Python (pilih versi, bukan cuma satu) plus Go, Rust, C, dan C++ toolchain, browser automation lengkap (Puppeteer, Playwright, puppeteer-real-browser, Camoufox), static site hosting tanpa nulis server, cron job scheduler bawaan, backup otomatis ke folder + Telegram, web terminal, dan Cloudflare Tunnel. Auto-detect runtime dari startup command kamu.",
     "features": [],
     "docker_images": {
         "ghcr.io/fidzzcodex-me/codex-tools:main": "ghcr.io/fidzzcodex-me/codex-tools:main"
@@ -71,7 +71,7 @@
         },
         {
             "name": "Node.js Version",
-            "description": "Pilih versi Node.js. Cuma berlaku kalau Startup Command pakai node/npm/pnpm/yarn.",
+            "description": "Pilih versi Node.js. Cuma berlaku kalau Startup Command pakai node/npm/pnpm/yarn/bun.",
             "env_variable": "NODE_VERSION",
             "default_value": "22",
             "user_viewable": true,
@@ -106,22 +106,32 @@
             "default_value": "npm",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "nullable|string|in:npm,pnpm,yarn",
+            "rules": "nullable|string|in:npm,pnpm,yarn,bun",
+            "field_type": "text"
+        },
+        {
+            "name": "Auto Build",
+            "description": "Compile ulang project Go/Rust/C/C++ setiap restart sebelum start command dijalankan (kalau start command pakai binary path seperti ./app_bin).",
+            "env_variable": "AUTO_BUILD",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:true,false",
             "field_type": "text"
         },
         {
             "name": "Skip Deps Install",
-            "description": "Lewati npm/pip/composer install setiap restart. Aktifkan kalau dependency sudah lengkap dan mau restart lebih cepat.",
+            "description": "Lewati npm/pip/composer/go mod install setiap restart. Aktifkan kalau dependency sudah lengkap dan mau restart lebih cepat.",
             "env_variable": "SKIP_DEPS_INSTALL",
             "default_value": "false",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "nullable|boolean",
+            "rules": "required|string|in:true,false",
             "field_type": "text"
         },
         {
             "name": "Process Manager (PM2)",
-            "description": "true = auto-restart aplikasi kamu kalau crash, tanpa restart seluruh container. Node.js pakai PM2, bahasa lain (PHP/Python) pakai Supervisor. Otomatis milih sesuai Startup Command.",
+            "description": "true = auto-restart aplikasi kamu kalau crash, tanpa restart seluruh container. Node.js pakai PM2, bahasa lain (PHP/Python/dll) pakai Supervisor. Otomatis milih sesuai Startup Command.",
             "env_variable": "PROCESS_MANAGER",
             "default_value": "false",
             "user_viewable": true,
@@ -133,7 +143,7 @@
             "name": "Headless Mode",
             "description": "true = browser automation (Puppeteer/Playwright) jalan headless, hemat resource.\nfalse = jalan headful lewat Xvfb, rendering lebih mirip browser asli & bypass proteksi lebih kuat, tapi lebih berat.",
             "env_variable": "HEADLESS_MODE",
-            "default_value": "false",
+            "default_value": "true",
             "user_viewable": true,
             "user_editable": true,
             "rules": "required|string|in:true,false",
@@ -283,7 +293,7 @@
             "name": "Enable Web Terminal",
             "description": "true = akses terminal langsung dari browser (via ttyd), tanpa perlu buka panel Pterodactyl.",
             "env_variable": "ENABLE_WEB_TERMINAL",
-            "default_value": "true",
+            "default_value": "false",
             "user_viewable": true,
             "user_editable": true,
             "rules": "nullable|string|in:true,false,1,0",
