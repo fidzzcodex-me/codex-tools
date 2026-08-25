@@ -4,10 +4,6 @@
 # problem is upstream of this script (Docker/Wings), not the script itself.
 echo "[boot] entrypoint.sh started, pid $$"
 
-set -o errtrace
-trap 'echo "[boot] FATAL: baris ${LINENO} gagal -> \"${BASH_COMMAND}\" (exit ${?})"' ERR
-trap 'ec=$?; [ "$ec" -ne 0 ] && echo "[boot] entrypoint.sh keluar dengan kode ${ec}"; exit $ec' EXIT
-
 # /home/container is a mounted volume; on a freshly created/recreated
 # container it can occasionally not be attached yet the instant this
 # process starts. Retry briefly instead of exiting immediately with zero
@@ -40,20 +36,6 @@ for s in $SCRIPTS_TO_LOAD; do
 done
 echo "[boot] semua script berhasil di-load"
 
-# Panel egg rules accept 1/0 as valid values for several toggles, but every
-# check below only ever compared against the literal string "true". Setting
-# one of these to "1" therefore looked enabled in the panel while silently
-# doing nothing at runtime. Normalize once, up front.
-for _b in STATIC_HOST_MODE PROCESS_MANAGER HEADLESS_MODE AUTO_UPDATE USER_UPLOAD \
-          SKIP_DEPS_INSTALL ENABLE_AUTO_BACKUP ENABLE_TELEGRAM_BACKUP \
-          ENABLE_WEB_TERMINAL ENABLE_CF_TUNNEL; do
-  case "${!_b}" in
-    1|true|TRUE|True|yes|YES|on|ON) export "$_b=true" ;;
-    0|false|FALSE|False|no|NO|off|OFF) export "$_b=false" ;;
-  esac
-done
-unset _b
-
 setup_identity
 run_boot_animation
 
@@ -80,7 +62,7 @@ print_runtime_status
 start_live_stats_ticker
 start_log_rotation
 
-export HEADLESS_MODE="${HEADLESS_MODE:-false}"
+export HEADLESS_MODE="${HEADLESS_MODE:-true}"
 
 FINAL_CMD="$STARTUP_CMD"
 USE_SUPERVISOR="false"
@@ -125,7 +107,7 @@ if [ "$HEADLESS_MODE" = "false" ]; then
     ui_info "PATH: ${PATH}"
     ui_info "Image belum ter-rebuild dengan paket xvfb - reinstall/rebuild server"
   else
-    XVFB_PREFIX="xvfb-run -a --server-args=-screen\ 0\ 1280x720x16\ -ac "
+    XVFB_PREFIX="xvfb-run -a --server-args=-screen\ 0\ 1280x1024x24\ -ac "
     ui_ok "HEADLESS_MODE=false -> Xvfb virtual display aktif"
   fi
 else
@@ -134,7 +116,6 @@ fi
 
 EXEC_CMD="${XVFB_PREFIX}${FINAL_CMD}"
 ui_row "Exec" "$EXEC_CMD"
-ui_ok "Boot selesai dalam ${SECONDS}s"
 echo ""
 
 if [ "$USE_SUPERVISOR" = "true" ]; then
