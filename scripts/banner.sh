@@ -1,25 +1,25 @@
 #!/bin/bash
 
 print_banner() {
-  local cpu_cores ram_str disk_used disk_total uptime_str
+  local cpu_cores ram_str disk_used disk_total
 
   cpu_cores=$(get_container_cpu_cores)
   ram_str=$(get_container_memory)
   disk_used=$(df -h /home/container 2>/dev/null | awk 'NR==2 {print $3}')
   disk_total=$(df -h /home/container 2>/dev/null | awk 'NR==2 {print $2}')
-  uptime_str=$(get_container_uptime)
 
   ui_section "codex-tools · Console"
 
-  ui_row2 "CPU" "${cpu_cores} cores" "Uptime" "$uptime_str"
-  ui_row2 "RAM" "$ram_str" "Disk" "${disk_used}/${disk_total}"
+  ui_row "CPU" "${cpu_cores} cores"
+  ui_row "RAM" "$ram_str"
+  ui_row "Disk" "${disk_used} / ${disk_total}"
   echo ""
 }
 
 # Live-checks each toolchain right now (not cached) and prints a
 # [+]/[-] line with version, e.g. "[+] Node.js  v22.11.0"
 print_runtime_status() {
-  local node_ver python_ver php_ver
+  local node_ver python_ver php_ver bun_ver go_ver gcc_ver gpp_ver
 
   ui_section "Runtime"
 
@@ -42,6 +42,42 @@ print_runtime_status() {
     ui_check_ver "PHP" "true" "v${php_ver}"
   else
     ui_check_ver "PHP" "false" ""
+  fi
+
+  if command -v go >/dev/null 2>&1; then
+    go_ver=$(go version 2>/dev/null | awk '{print $3}' | sed 's/^go/v/')
+    ui_check_ver "Golang" "true" "$go_ver"
+  else
+    ui_check_ver "Golang" "false" ""
+  fi
+
+  if command -v bun >/dev/null 2>&1; then
+    bun_ver=$(bun --version 2>/dev/null)
+    ui_check_ver "Bun" "true" "v${bun_ver}"
+  else
+    ui_check_ver "Bun" "false" ""
+  fi
+
+  if command -v gcc >/dev/null 2>&1; then
+    gcc_ver=$(gcc -dumpversion 2>/dev/null)
+    ui_check_ver "C" "true" "gcc ${gcc_ver}"
+  else
+    ui_check_ver "C" "false" ""
+  fi
+
+  if command -v g++ >/dev/null 2>&1; then
+    gpp_ver=$(g++ -dumpversion 2>/dev/null)
+    ui_check_ver "C++" "true" "g++ ${gpp_ver}"
+  else
+    ui_check_ver "C++" "false" ""
+  fi
+
+  if command -v rustc >/dev/null 2>&1; then
+    local rust_ver
+    rust_ver=$(rustc --version 2>/dev/null | awk '{print $2}')
+    ui_check_ver "Rust" "true" "v${rust_ver}"
+  else
+    ui_check_ver "Rust" "false" ""
   fi
   echo ""
 }
